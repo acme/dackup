@@ -47,8 +47,6 @@ sub backup {
     my $source      = $self->source;
     my $destination = $self->destination;
 
-    #   my $scope = $self->kiokudb->new_scope;
-
     my $source_entries      = $source->entries($self);
     my $destination_entries = $destination->entries($self);
 
@@ -57,6 +55,9 @@ sub backup {
 
     warn 'to upload ' . scalar(@$entries_to_upload);
     warn 'to delete ' . scalar(@$entries_to_delete);
+
+    $destination->put( $source, $_ ) foreach @$entries_to_upload;
+    $destination->delete($_) foreach @$entries_to_delete;
 }
 
 sub _calc {
@@ -78,11 +79,13 @@ sub _calc {
 
                 # warn "$key same";
             } else {
-                warn "$key different";
+
+                # warn "$key different";
                 push @entries_to_upload, $source_entry;
             }
         } else {
-            warn "$key missing";
+
+            # warn "$key missing";
             push @entries_to_upload, $source_entry;
         }
     }
@@ -91,7 +94,8 @@ sub _calc {
         my $source_entry      = $source_entries{$key};
         my $destination_entry = $destination_entries{$key};
         unless ($source_entry) {
-            warn "$key to delete";
+
+            # warn "$key to delete";
             push @entries_to_delete, $destination_entry;
         }
     }

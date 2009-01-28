@@ -32,4 +32,29 @@ sub entries {
     return \@entries;
 }
 
+sub put {
+    my ( $self, $source, $entry ) = @_;
+    my $source_type = ref($source);
+    if ( $source_type eq 'Dackup::Target::Filesystem' ) {
+        my $object = $self->bucket->object(
+            key  => $entry->key,
+            etag => $entry->md5_hex,
+            size => $entry->size,
+        );
+        warn $entry->key;
+        $object->put_filename( $entry->filename );
+
+    } else {
+        confess "Do not know how to put $source_type";
+    }
+}
+
+sub delete {
+    my ( $self, $entry ) = @_;
+
+    warn $entry->key;
+    my $object = $self->bucket->object( key => $entry->key );
+    $object->delete;
+}
+
 1;
