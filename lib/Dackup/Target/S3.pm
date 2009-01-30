@@ -53,11 +53,7 @@ sub put {
     my $source_type = ref($source);
     my $object      = $self->object($entry);
     if ( $source_type eq 'Dackup::Target::Filesystem' ) {
-
-        warn $entry->key;
         $object->put_filename( $source->filename($entry) );
-
-        #       die "put one";
     } else {
         confess "Do not know how to put $source_type";
     }
@@ -65,12 +61,8 @@ sub put {
 
 sub delete {
     my ( $self, $entry ) = @_;
-
-    warn $entry->key;
     my $object = $self->object($entry);
     $object->delete;
-
-    #    die "deleted one";
 }
 
 1;
