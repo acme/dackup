@@ -69,18 +69,18 @@ sub filename {
 
 sub put {
     my ( $self, $source, $entry ) = @_;
-    my $source_type     = ref($source);
-    my $source_filename = $source->filename($entry);
+    my $source_type          = ref($source);
+    my $destination_filename = $self->filename($entry);
+    $destination_filename->parent->mkpath;
+
     if ( $source_type eq 'Dackup::Target::Filesystem' ) {
-        my $destination_filename = $self->filename($entry);
-        $destination_filename->parent->mkpath;
+        my $source_filename = $source->filename($entry);
         copy( $source_filename->stringify, $destination_filename->stringify )
             || confess(
             "Error copying $source_filename to $destination_filename: $!");
-
-        # warn "$source_filename -> $destination_filename";
-
-        #       die "put one";
+    } elsif ( $source_type eq 'Dackup::Target::S3' ) {
+        my $source_object = $source->object($entry);
+        $source_object->get_filename( $destination_filename->stringify );
     } else {
         confess "Do not know how to put $source_type";
     }
