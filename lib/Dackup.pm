@@ -10,6 +10,7 @@ use DBI;
 use Data::Stream::Bulk::Path::Class;
 use Path::Class;
 use Set::Object;
+use Term::ProgressBar::Simple;
 
 has 'directory' => (
     is       => 'ro',
@@ -56,8 +57,16 @@ sub backup {
     warn 'to upload ' . scalar(@$entries_to_upload);
     warn 'to delete ' . scalar(@$entries_to_delete);
 
-    $destination->put( $source, $_ ) foreach @$entries_to_upload;
-    $destination->delete($_) foreach @$entries_to_delete;
+    my $progress = Term::ProgressBar::Simple->new(
+        scalar(@$entries_to_upload) + scalar(@$entries_to_delete) );
+    foreach my $entry (@$entries_to_upload) {
+        $destination->put( $source, $entry );
+        $progress++;
+    }
+    foreach my $entry (@$entries_to_delete) {
+        $destination->delete($entry);
+        $progress++;
+    }
 }
 
 sub _calc {
