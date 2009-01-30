@@ -2,11 +2,6 @@ package Dackup::Entry;
 use Moose;
 use MooseX::StrictConstructor;
 
-has 'filename' => (
-    is       => 'ro',
-    isa      => 'Str|Undef',
-    required => 1,
-);
 has 'key' => (
     is       => 'ro',
     isa      => 'Str',

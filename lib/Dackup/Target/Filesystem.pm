@@ -35,7 +35,7 @@ sub entries {
                     my $key = $filename->relative($directory)->stringify;
 
                     my $stat = $filename->stat
-                        || die "Unable to stat $filename";
+                        || confess "Unable to stat $filename";
                     my $ctime    = $stat->ctime;
                     my $mtime    = $stat->mtime;
                     my $size     = $stat->size;
@@ -45,10 +45,9 @@ sub entries {
                     my $entry = $kiokudb->lookup($cachekey);
                     unless ($entry) {
                         $entry = Dackup::Entry->new(
-                            {   filename => $filename->stringify,
-                                key      => $key,
-                                md5_hex  => file_md5_hex($filename),
-                                size     => $size,
+                            {   key     => $key,
+                                md5_hex => file_md5_hex($filename),
+                                size    => $size,
                             }
                         );
                         $kiokudb->store( $cachekey => $entry );
@@ -59,6 +58,11 @@ sub entries {
         }
     );
     return \@entries;
+}
+
+sub filename {
+    my ( $self, $entry ) = @_;
+    return file( $self->directory, $entry->key );
 }
 
 1;

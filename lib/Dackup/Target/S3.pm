@@ -20,10 +20,9 @@ sub entries {
     until ( $object_stream->is_done ) {
         foreach my $object ( $object_stream->items ) {
             my $entry = Dackup::Entry->new(
-                {   filename => undef,
-                    key      => $object->key,
-                    md5_hex  => $object->etag,
-                    size     => $object->size,
+                {   key     => $object->key,
+                    md5_hex => $object->etag,
+                    size    => $object->size,
                 }
             );
             push @entries, $entry;
@@ -32,18 +31,24 @@ sub entries {
     return \@entries;
 }
 
+sub object {
+    my ( $self, $entry ) = @_;
+    return $self->bucket->object(
+        key  => $entry->key,
+        etag => $entry->md5_hex,
+        size => $entry->size,
+    );
+}
+
 sub put {
     my ( $self, $source, $entry ) = @_;
     my $source_type = ref($source);
     if ( $source_type eq 'Dackup::Target::Filesystem' ) {
-        my $object = $self->bucket->object(
-            key  => $entry->key,
-            etag => $entry->md5_hex,
-            size => $entry->size,
-        );
+        my $object = $self->object($entry);
         warn $entry->key;
-        $object->put_filename( $entry->filename );
+        $object->put_filename( $source->filename($entry) );
 
+        #        die "put one";
     } else {
         confess "Do not know how to put $source_type";
     }
@@ -53,8 +58,10 @@ sub delete {
     my ( $self, $entry ) = @_;
 
     warn $entry->key;
-    my $object = $self->bucket->object( key => $entry->key );
+    my $object = $self->object($entry);
     $object->delete;
+
+    #    die "deleted one";
 }
 
 1;
