@@ -51,8 +51,9 @@ sub object {
 sub put {
     my ( $self, $source, $entry ) = @_;
     my $source_type = ref($source);
+    my $object      = $self->object($entry);
     if ( $source_type eq 'Dackup::Target::Filesystem' ) {
-        my $object = $self->object($entry);
+
         warn $entry->key;
         $object->put_filename( $source->filename($entry) );
 
