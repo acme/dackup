@@ -3,10 +3,18 @@ use Moose;
 use MooseX::StrictConstructor;
 
 extends 'Dackup::Target';
+
 has 'bucket' => (
     is       => 'ro',
     isa      => 'Net::Amazon::S3::Client::Bucket',
     required => 1,
+);
+
+has 'prefix' => (
+    is       => 'ro',
+    isa      => 'Str',
+    required => 1,
+    default  => '',
 );
 
 __PACKAGE__->meta->make_immutable;
@@ -16,7 +24,7 @@ sub entries {
     my $bucket = $self->bucket;
 
     my @entries;
-    my $object_stream = $bucket->list;
+    my $object_stream = $bucket->list( { prefix => $self->prefix } );
     until ( $object_stream->is_done ) {
         foreach my $object ( $object_stream->items ) {
             my $entry = Dackup::Entry->new(
@@ -34,7 +42,7 @@ sub entries {
 sub object {
     my ( $self, $entry ) = @_;
     return $self->bucket->object(
-        key  => $entry->key,
+        key  => $self->prefix . $entry->key,
         etag => $entry->md5_hex,
         size => $entry->size,
     );
@@ -48,7 +56,7 @@ sub put {
         warn $entry->key;
         $object->put_filename( $source->filename($entry) );
 
-         #       die "put one";
+        #       die "put one";
     } else {
         confess "Do not know how to put $source_type";
     }

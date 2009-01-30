@@ -6,7 +6,8 @@ use Digest::MD5::File qw(file_md5_hex);
 use Path::Class;
 
 extends 'Dackup::Target';
-has 'directory' => (
+
+has 'prefix' => (
     is       => 'ro',
     isa      => 'Path::Class::Dir',
     required => 1,
@@ -16,20 +17,20 @@ has 'directory' => (
 __PACKAGE__->meta->make_immutable;
 
 sub entries {
-    my $self      = shift;
-    my $dackup    = shift;
-    my $directory = $self->directory;
-    my $cache     = $dackup->cache;
+    my $self   = shift;
+    my $dackup = shift;
+    my $prefix = $self->prefix;
+    my $cache  = $dackup->cache;
 
     my $file_stream = Data::Stream::Bulk::Path::Class->new(
-        dir        => Path::Class::Dir->new($directory),
+        dir        => Path::Class::Dir->new($prefix),
         only_files => 1,
     );
 
     my @entries;
     until ( $file_stream->is_done ) {
         foreach my $filename ( $file_stream->items ) {
-            my $key = $filename->relative($directory)->stringify;
+            my $key = $filename->relative($prefix)->stringify;
 
             my $stat = $filename->stat
                 || confess "Unable to stat $filename";
@@ -60,7 +61,7 @@ sub entries {
 
 sub filename {
     my ( $self, $entry ) = @_;
-    return file( $self->directory, $entry->key );
+    return file( $self->prefix, $entry->key );
 }
 
 1;
