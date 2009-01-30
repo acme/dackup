@@ -3,6 +3,7 @@ use Moose;
 use MooseX::StrictConstructor;
 use MooseX::Types::Path::Class;
 use Digest::MD5::File qw(file_md5_hex);
+use File::Copy;
 use Path::Class;
 
 extends 'Dackup::Target';
@@ -21,6 +22,8 @@ sub entries {
     my $dackup = shift;
     my $prefix = $self->prefix;
     my $cache  = $dackup->cache;
+
+    return [] unless -d $prefix;
 
     my $file_stream = Data::Stream::Bulk::Path::Class->new(
         dir        => Path::Class::Dir->new($prefix),
@@ -62,6 +65,31 @@ sub entries {
 sub filename {
     my ( $self, $entry ) = @_;
     return file( $self->prefix, $entry->key );
+}
+
+sub put {
+    my ( $self, $source, $entry ) = @_;
+    my $source_type     = ref($source);
+    my $source_filename = $source->filename($entry);
+    if ( $source_type eq 'Dackup::Target::Filesystem' ) {
+        my $destination_filename = $self->filename($entry);
+        $destination_filename->parent->mkpath;
+        copy( $source_filename->stringify, $destination_filename->stringify )
+            || confess(
+            "Error copying $source_filename to $destination_filename: $!");
+
+        # warn "$source_filename -> $destination_filename";
+
+        #       die "put one";
+    } else {
+        confess "Do not know how to put $source_type";
+    }
+}
+
+sub delete {
+    my ( $self, $entry ) = @_;
+    my $filename = $self->filename($entry);
+    unlink($filename) || confess("Error deleting $filename: $!");
 }
 
 1;
