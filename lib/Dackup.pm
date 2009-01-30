@@ -2,11 +2,12 @@ package Dackup;
 use Moose;
 use MooseX::StrictConstructor;
 use MooseX::Types::Path::Class;
+use Dackup::Cache;
 use Dackup::Entry;
 use Dackup::Target::Filesystem;
 use Dackup::Target::S3;
+use DBI;
 use Data::Stream::Bulk::Path::Class;
-use KiokuDB;
 use Path::Class;
 use Set::Object;
 
@@ -26,20 +27,19 @@ has 'destination' => (
     isa      => 'Dackup::Target',
     required => 1,
 );
-has 'kiokudb' => (
+has 'cache' => (
     is       => 'rw',
-    isa      => 'KiokuDB',
+    isa      => 'Dackup::Cache',
     required => 0,
 );
 
 __PACKAGE__->meta->make_immutable;
 
 sub BUILD {
-    my $self = shift;
+    my $self     = shift;
     my $filename = file( $self->directory, 'dackup.db' );
-    my $kiokudb
-        = KiokuDB->connect( "dbi:SQLite:dbname=$filename", create => 1 );
-    $self->kiokudb($kiokudb);
+    my $cache    = Dackup::Cache->new( filename => $filename );
+    $self->cache($cache);
 }
 
 sub backup {
