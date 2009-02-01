@@ -22,13 +22,16 @@ __PACKAGE__->meta->make_immutable;
 sub entries {
     my $self   = shift;
     my $bucket = $self->bucket;
+    my $prefix = $self->prefix;
 
     my @entries;
-    my $object_stream = $bucket->list( { prefix => $self->prefix } );
+    my $object_stream = $bucket->list( { prefix => $prefix } );
     until ( $object_stream->is_done ) {
         foreach my $object ( $object_stream->items ) {
+            my $key = $object->key;
+            $key =~ s/^$prefix//;
             my $entry = Dackup::Entry->new(
-                {   key     => $object->key,
+                {   key     => $key,
                     md5_hex => $object->etag,
                     size    => $object->size,
                 }
