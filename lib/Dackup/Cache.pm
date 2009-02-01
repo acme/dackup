@@ -35,7 +35,7 @@ sub BUILD {
         "dbi:SQLite:dbname=$filename",
         "", "",
         {   RaiseError => 1,
-            AutoCommit => 0,
+            AutoCommit => 1,
         }
     );
 
@@ -66,11 +66,6 @@ sub set {
     my ( $self, $id, $md5_hex ) = @_;
     my $sth = $self->sth_insert;
     $sth->execute( $id, $md5_hex );
-}
-
-sub DEMOLISH {
-    my $self = shift;
-    $self->dbh->commit;
 }
 
 1;
