@@ -19,7 +19,7 @@ __PACKAGE__->meta->make_immutable;
 
 sub entries {
     my $self   = shift;
-    my $dackup = shift;
+    my $dackup = $self->dackup;
     my $prefix = $self->prefix;
     my $cache  = $dackup->cache;
 

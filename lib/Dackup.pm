@@ -4,6 +4,7 @@ use MooseX::StrictConstructor;
 use MooseX::Types::Path::Class;
 use Dackup::Cache;
 use Dackup::Entry;
+use Dackup::Target::CloudFiles;
 use Dackup::Target::Filesystem;
 use Dackup::Target::S3;
 use DBI;
@@ -41,6 +42,8 @@ sub BUILD {
     my $filename = file( $self->directory, 'dackup.db' );
     my $cache    = Dackup::Cache->new( filename => $filename );
     $self->cache($cache);
+    $self->source->dackup($self);
+    $self->destination->dackup($self);
 }
 
 sub backup {
@@ -48,8 +51,8 @@ sub backup {
     my $source      = $self->source;
     my $destination = $self->destination;
 
-    my $source_entries      = $source->entries($self);
-    my $destination_entries = $destination->entries($self);
+    my $source_entries      = $source->entries;
+    my $destination_entries = $destination->entries;
 
     my ( $entries_to_upload, $entries_to_delete )
         = $self->_calc( $source_entries, $destination_entries );
