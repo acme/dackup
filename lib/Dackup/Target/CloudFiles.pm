@@ -67,7 +67,8 @@ sub update {
 sub delete {
     my ( $self, $entry ) = @_;
     my $container = $self->container;
-    $container->delete( $entry->key );
+    my $object    = $container->object( $entry->key );
+    $object->delete;
     my $cachekey = 'cloudfiles:' . $container->name . ':' . $entry->key;
     $self->dackup->cache->delete($cachekey);
 }
