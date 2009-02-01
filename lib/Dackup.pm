@@ -54,16 +54,16 @@ sub backup {
     my $source_entries      = $source->entries;
     my $destination_entries = $destination->entries;
 
-    my ( $entries_to_upload, $entries_to_delete )
+    my ( $entries_to_update, $entries_to_delete )
         = $self->_calc( $source_entries, $destination_entries );
 
-    warn 'to upload ' . scalar(@$entries_to_upload);
+    warn 'to update ' . scalar(@$entries_to_update);
     warn 'to delete ' . scalar(@$entries_to_delete);
 
     my $progress = Term::ProgressBar::Simple->new(
-        scalar(@$entries_to_upload) + scalar(@$entries_to_delete) );
-    foreach my $entry (@$entries_to_upload) {
-        $destination->put( $source, $entry );
+        scalar(@$entries_to_update) + scalar(@$entries_to_delete) );
+    foreach my $entry (@$entries_to_update) {
+        $destination->update( $source, $entry );
         $progress++;
     }
     foreach my $entry (@$entries_to_delete) {
@@ -80,7 +80,7 @@ sub _calc {
     $source_entries{ $_->key }      = $_ foreach @$source_entries;
     $destination_entries{ $_->key } = $_ foreach @$destination_entries;
 
-    my @entries_to_upload;
+    my @entries_to_update;
     my @entries_to_delete;
 
     foreach my $key ( sort keys %source_entries ) {
@@ -93,12 +93,12 @@ sub _calc {
             } else {
 
                 # warn "$key different";
-                push @entries_to_upload, $source_entry;
+                push @entries_to_update, $source_entry;
             }
         } else {
 
             # warn "$key missing";
-            push @entries_to_upload, $source_entry;
+            push @entries_to_update, $source_entry;
         }
     }
 
@@ -112,7 +112,7 @@ sub _calc {
         }
     }
 
-    return \@entries_to_upload, \@entries_to_delete;
+    return \@entries_to_update, \@entries_to_delete;
 }
 
 1;

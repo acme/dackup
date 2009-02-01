@@ -48,14 +48,14 @@ sub object {
     );
 }
 
-sub put {
+sub update {
     my ( $self, $source, $entry ) = @_;
     my $source_type = ref($source);
     my $object      = $self->object($entry);
     if ( $source_type eq 'Dackup::Target::Filesystem' ) {
         $object->put_filename( $source->filename($entry) );
     } else {
-        confess "Do not know how to put $source_type";
+        confess "Do not know how to update from $source_type";
     }
 }
 

@@ -67,7 +67,7 @@ sub filename {
     return file( $self->prefix, $entry->key );
 }
 
-sub put {
+sub update {
     my ( $self, $source, $entry ) = @_;
     my $source_type          = ref($source);
     my $destination_filename = $self->filename($entry);
@@ -82,7 +82,7 @@ sub put {
         my $source_object = $source->object($entry);
         $source_object->get_filename( $destination_filename->stringify );
     } else {
-        confess "Do not know how to put $source_type";
+        confess "Do not know how to update from $source_type";
     }
 }
 

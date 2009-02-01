@@ -49,14 +49,14 @@ sub entries {
     return \@entries;
 }
 
-sub put {
+sub update {
     my ( $self, $source, $entry ) = @_;
     my $container   = $self->container;
     my $source_type = ref($source);
     if ( $source_type eq 'Dackup::Target::Filesystem' ) {
         $container->put_filename( $entry->key, $source->filename($entry) );
     } else {
-        confess "Do not know how to put $source_type";
+        confess "Do not know how to update from $source_type";
     }
     my $cachekey = 'cloudfiles:' . $container->name . ':' . $entry->key;
     $self->dackup->cache->set( $cachekey,
