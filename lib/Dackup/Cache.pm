@@ -22,6 +22,11 @@ has 'sth_insert' => (
     isa      => 'DBI::st',
     required => 0,
 );
+has 'sth_delete' => (
+    is       => 'rw',
+    isa      => 'DBI::st',
+    required => 0,
+);
 
 __PACKAGE__->meta->make_immutable;
 
@@ -52,6 +57,7 @@ CREATE TABLE md5_hex (
     $self->sth_select(
         $dbh->prepare('SELECT md5_hex FROM md5_hex WHERE id = ?') );
     $self->sth_insert( $dbh->prepare('INSERT INTO md5_hex VALUES (?, ?)') );
+    $self->sth_delete( $dbh->prepare('DELETE FROM md5_hex WHERE id = ?') );
 }
 
 sub get {
@@ -64,8 +70,12 @@ sub get {
 
 sub set {
     my ( $self, $id, $md5_hex ) = @_;
-    my $sth = $self->sth_insert;
-    $sth->execute( $id, $md5_hex );
+    $self->sth_insert->execute( $id, $md5_hex );
+}
+
+sub delete {
+    my ( $self, $id ) = @_;
+    $self->sth_delete->execute($id);
 }
 
 1;

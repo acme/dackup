@@ -52,6 +52,7 @@ sub entries {
 sub update {
     my ( $self, $source, $entry ) = @_;
     my $container   = $self->container;
+    my $cache       = $self->dackup->cache;
     my $source_type = ref($source);
     if ( $source_type eq 'Dackup::Target::Filesystem' ) {
         $container->put_filename( $entry->key, $source->filename($entry) );
@@ -59,8 +60,8 @@ sub update {
         confess "Do not know how to update from $source_type";
     }
     my $cachekey = 'cloudfiles:' . $container->name . ':' . $entry->key;
-    $self->dackup->cache->set( $cachekey,
-        $entry->size . ' ' . $entry->md5_hex );
+    $cache->delete($cachekey);
+    $cache->set( $cachekey, $entry->size . ' ' . $entry->md5_hex );
 }
 
 sub delete {
@@ -68,8 +69,7 @@ sub delete {
     my $container = $self->container;
     $container->delete( $entry->key );
     my $cachekey = 'cloudfiles:' . $container->name . ':' . $entry->key;
-    $self->dackup->cache->set( $cachekey,
-        $entry->size . ' ' . $entry->md5_hex );
+    $self->dackup->cache->delete($cachekey);
 }
 
 1;
