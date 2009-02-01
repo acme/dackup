@@ -24,11 +24,14 @@ sub entries {
     my $dackup    = $self->dackup;
     my $cache     = $dackup->cache;
     my $container = $self->container;
+    my $prefix    = $self->prefix;
 
     my @entries;
-    foreach my $object ( $container->objects->all ) {
-        my $key          = $object->name;
-        my $cachekey     = 'cloudfiles:' . $container->name . ':' . $key;
+    foreach my $object ( $container->objects( prefix => $prefix )->all ) {
+        my $key = $object->name;
+        $key =~ s/^$prefix//;
+        my $cachekey
+            = 'cloudfiles:' . $container->name . ':' . $prefix . $key;
         my $size_md5_hex = $cache->get($cachekey);
         my ( $size, $md5_hex );
         if ($size_md5_hex) {
@@ -53,13 +56,16 @@ sub update {
     my ( $self, $source, $entry ) = @_;
     my $container   = $self->container;
     my $cache       = $self->dackup->cache;
+    my $prefix      = $self->prefix;
     my $source_type = ref($source);
     if ( $source_type eq 'Dackup::Target::Filesystem' ) {
-        $container->put_filename( $entry->key, $source->filename($entry) );
+        $container->put_filename( $prefix . $entry->key,
+            $source->filename($entry) );
     } else {
         confess "Do not know how to update from $source_type";
     }
-    my $cachekey = 'cloudfiles:' . $container->name . ':' . $entry->key;
+    my $cachekey
+        = 'cloudfiles:' . $container->name . ':' . $prefix . $entry->key;
     $cache->delete($cachekey);
     $cache->set( $cachekey, $entry->size . ' ' . $entry->md5_hex );
 }
@@ -67,9 +73,11 @@ sub update {
 sub delete {
     my ( $self, $entry ) = @_;
     my $container = $self->container;
-    my $object    = $container->object( $entry->key );
+    my $prefix    = $self->prefix;
+    my $object    = $container->object( $prefix . $entry->key );
     $object->delete;
-    my $cachekey = 'cloudfiles:' . $container->name . ':' . $entry->key;
+    my $cachekey
+        = 'cloudfiles:' . $container->name . ':' . $prefix . $entry->key;
     $self->dackup->cache->delete($cachekey);
 }
 
