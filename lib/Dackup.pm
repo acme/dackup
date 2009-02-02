@@ -12,6 +12,8 @@ use Data::Stream::Bulk::Path::Class;
 use Path::Class;
 use Term::ProgressBar::Simple;
 
+our $VERSION = '0.32';
+
 has 'directory' => (
     is       => 'ro',
     isa      => 'Path::Class::Dir',
