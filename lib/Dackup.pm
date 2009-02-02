@@ -10,7 +10,6 @@ use Dackup::Target::S3;
 use DBI;
 use Data::Stream::Bulk::Path::Class;
 use Path::Class;
-use Set::Object;
 use Term::ProgressBar::Simple;
 
 has 'directory' => (
