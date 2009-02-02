@@ -1,6 +1,7 @@
 package Dackup::Target::CloudFiles;
 use Moose;
 use MooseX::StrictConstructor;
+use File::Temp qw/tmpnam/;
 
 extends 'Dackup::Target';
 
@@ -37,8 +38,8 @@ sub entries {
         if ($size_md5_hex) {
             ( $size, $md5_hex ) = split ' ', $size_md5_hex;
         } else {
-            $size    = $object->size;
-            $md5_hex = $object->md5;
+            $size    = $object->size || 0;
+            $md5_hex = $object->md5  || '';
             $cache->set( $cachekey, "$size $md5_hex" );
         }
         my $entry = Dackup::Entry->new(
@@ -61,6 +62,12 @@ sub update {
     if ( $source_type eq 'Dackup::Target::Filesystem' ) {
         $container->put_filename( $prefix . $entry->key,
             $source->filename($entry) );
+    } elsif ( $source_type eq 'Dackup::Target::S3' ) {
+        my $filename      = tmpnam();
+        my $source_object = $source->object($entry);
+        $source_object->get_filename($filename);
+        $container->put_filename( $prefix . $entry->key, $filename );
+        unlink($filename) || die "Error deleting $filename: $!";
     } else {
         confess "Do not know how to update from $source_type";
     }
