@@ -7,6 +7,7 @@ use Dackup::Entry;
 use Dackup::Target::CloudFiles;
 use Dackup::Target::Filesystem;
 use Dackup::Target::S3;
+use Dackup::Target::SSH;
 use DBI;
 use Data::Stream::Bulk::Path::Class;
 use Path::Class;
@@ -28,6 +29,11 @@ has 'source' => (
 has 'destination' => (
     is       => 'ro',
     isa      => 'Dackup::Target',
+    required => 1,
+);
+has 'delete' => (
+    is       => 'rw',
+    isa      => 'Bool',
     required => 1,
 );
 has 'cache' => (
@@ -59,17 +65,26 @@ sub backup {
         = $self->_calc( $source_entries, $destination_entries );
 
     warn 'to update ' . scalar(@$entries_to_update);
-    warn 'to delete ' . scalar(@$entries_to_delete);
 
-    my $progress = Term::ProgressBar::Simple->new(
-        scalar(@$entries_to_update) + scalar(@$entries_to_delete) );
+    my $total;
+    if ( $self->delete ) {
+        warn 'to delete ' . scalar(@$entries_to_delete) if $self->delete;
+        $total = scalar(@$entries_to_update) + scalar(@$entries_to_delete);
+    } else {
+        $total = scalar(@$entries_to_update);
+    }
+
+    my $progress = Term::ProgressBar::Simple->new($total);
     foreach my $entry (@$entries_to_update) {
         $destination->update( $source, $entry );
         $progress++;
     }
-    foreach my $entry (@$entries_to_delete) {
-        $destination->delete($entry);
-        $progress++;
+
+    if ( $self->delete ) {
+        foreach my $entry (@$entries_to_delete) {
+            $destination->delete($entry);
+            $progress++;
+        }
     }
 }
 
