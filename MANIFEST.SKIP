@@ -1,0 +1,7 @@
+.pl$
+^.git/
+dackup.db
+Makefile$
+Makefile.old
+MANIFEST.bak
+MANIFEST.SKIP
