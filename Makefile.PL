@@ -16,7 +16,7 @@ WriteMakefile(
         'Moose'                      => '0',
         'MooseX::StrictConstructor'  => '0',
         'MooseX::Types::Path::Class' => '0',
-        'Net::Amazon::S3'            => '0.49',
+        'Net::Amazon::S3'            => '0.50',
         'Net::Mosso::CloudFiles'     => '0.35',
         'Path::Class'                => '0',
         'Term::ProgressBar::Simple'  => '0',
