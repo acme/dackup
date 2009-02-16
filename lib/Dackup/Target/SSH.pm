@@ -21,22 +21,29 @@ has 'prefix' => (
     coerce   => 1,
 );
 
+has 'directories' => (
+    is       => 'rw',
+    isa      => 'HashRef',
+    required => 0,
+    default  => sub { {} },
+);
+
 __PACKAGE__->meta->make_immutable;
 
 sub entries {
-    my $self   = shift;
-    my $ssh    = $self->ssh;
-    my $dackup = $self->dackup;
-    my $prefix = $self->prefix;
-    my $cache  = $dackup->cache;
+    my $self        = shift;
+    my $ssh         = $self->ssh;
+    my $dackup      = $self->dackup;
+    my $prefix      = $self->prefix;
+    my $cache       = $dackup->cache;
+    my $directories = $self->directories;
 
     my ( $type, $type_err ) = $ssh->capture2("stat -c '%F' $prefix");
     chomp $type;
     return [] if $type ne 'directory';
 
     my ( $output, $errput )
-        = $ssh->capture2(
-        "find $prefix -type f  | xargs stat -c '%n:%Z:%Y:%s:%i'");
+        = $ssh->capture2("find $prefix | xargs stat -c '%F:%n:%Z:%Y:%s:%i'");
     $ssh->error and die "ssh failed: " . $ssh->error;
 
     return [] unless $output;
@@ -44,14 +51,21 @@ sub entries {
     my @entries;
     my @not_in_cache;
     foreach my $line ( split "\n", $output ) {
-
-        my ( $filename, $ctime, $mtime, $size, $inodenum ) = split ':', $line;
+        my ( $type, $filename, $ctime, $mtime, $size, $inodenum ) = split ':',
+            $line;
         confess "Error with stat: $line"
-            unless defined($filename)
+            unless $type
+                && defined($filename)
                 && $ctime
                 && $mtime
                 && defined($size)
                 && defined($inodenum);
+
+        if ( $type eq 'directory' ) {
+            $directories->{$filename} = 1;
+            next;
+        }
+
         my $key = file($filename)->relative($prefix)->stringify;
         my $cachekey
             = 'ssh:' . $ssh->{_user} . ':' . $ssh->{_host} . ':' . $line;
@@ -130,13 +144,17 @@ sub update {
     my $source_type           = ref($source);
     my $destination_filename  = $self->filename($entry);
     my $destination_directory = $destination_filename->parent;
+    my $directories           = $self->directories;
 
     if ( $source_type eq 'Dackup::Target::Filesystem' ) {
         my $source_filename = $source->filename($entry);
 
-        warn "mkdir -p $destination_directory";
-        $ssh->system("mkdir -p $destination_directory")
-            || die "mkdir -p failed: " . $ssh->error;
+        unless ( $directories->{$destination_directory} ) {
+            warn "mkdir -p $destination_directory";
+            $ssh->system("mkdir -p $destination_directory")
+                || die "mkdir -p failed: " . $ssh->error;
+            $directories->{$destination_directory} = 1;
+        }
 
         warn "$source_filename -> $destination_filename";
 
