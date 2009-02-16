@@ -113,7 +113,8 @@ sub entries {
         # chomp $line;
         #warn "[$line]";
         my ( $md5_hex, $filename ) = split / +/, $line;
-        warn "[$md5_hex, $filename]";
+
+        #warn "[$md5_hex, $filename]";
         confess "Error with $line"
             unless defined $md5_hex && defined $filename;
         my $d = $filename_to_d{$filename};
@@ -150,13 +151,14 @@ sub update {
         my $source_filename = $source->filename($entry);
 
         unless ( $directories->{$destination_directory} ) {
-            warn "mkdir -p $destination_directory";
+
+            #warn "mkdir -p $destination_directory";
             $ssh->system("mkdir -p $destination_directory")
                 || die "mkdir -p failed: " . $ssh->error;
             $directories->{$destination_directory} = 1;
         }
 
-        warn "$source_filename -> $destination_filename";
+        #warn "$source_filename -> $destination_filename";
 
         $ssh->scp_put( "$source_filename", "$destination_filename" )
             || die "scp failed: " . $ssh->error;
