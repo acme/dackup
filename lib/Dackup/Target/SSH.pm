@@ -30,50 +30,92 @@ sub entries {
     my $prefix = $self->prefix;
     my $cache  = $dackup->cache;
 
+    my ( $type, $type_err ) = $ssh->capture2("stat -c '%F' $prefix");
+    chomp $type;
+    return [] if $type ne 'directory';
+
     my ( $output, $errput )
         = $ssh->capture2(
         "find $prefix -type f  | xargs stat -c '%n:%Z:%Y:%s:%i'");
-
-    #    $ssh->error and die "ssh failed: " . $ssh->error;
+    $ssh->error and die "ssh failed: " . $ssh->error;
 
     return [] unless $output;
 
     my @entries;
+    my @not_in_cache;
     foreach my $line ( split "\n", $output ) {
 
-        #warn "line is [$line]";
         my ( $filename, $ctime, $mtime, $size, $inodenum ) = split ':', $line;
-
-        #warn "[$filename / $ctime / $mtime / $size / $inodenum]";
+        confess "Error with stat: $line"
+            unless defined($filename)
+                && $ctime
+                && $mtime
+                && defined($size)
+                && defined($inodenum);
         my $key = file($filename)->relative($prefix)->stringify;
         my $cachekey
             = 'ssh:' . $ssh->{_user} . ':' . $ssh->{_host} . ':' . $line;
 
-        #warn "$key = $filename = [$cachekey]";
-
         my $md5_hex = $cache->get($cachekey);
         if ($md5_hex) {
+            push @entries,
+                Dackup::Entry->new(
+                {   key     => $key,
+                    md5_hex => $md5_hex,
+                    size    => $size,
+                }
+                );
         } else {
-            my ( $md5sum_output, $md5sum_errput )
-                = $ssh->capture2("md5sum $filename");
-            if ($md5sum_output) {
-                ($md5_hex) = split ' ', $md5sum_output;
-                $cache->set( $cachekey, $md5_hex );
-            } else {
-                warn "missing md5sum for $filename";
-                next;
-            }
-
+            push @not_in_cache,
+                {
+                key      => $key,
+                cachekey => $cachekey,
+                filename => $filename,
+                size     => $size,
+                };
         }
-
-        my $entry = Dackup::Entry->new(
-            {   key     => $key,
-                md5_hex => $md5_hex,
-                size    => $size,
-            }
-        );
-        push @entries, $entry;
     }
+
+    my $tempfile = $ssh->capture('tempfile');
+    chomp $tempfile;
+    $ssh->error and die "ssh failed: " . $ssh->error;
+    die "missing $tempfile" unless $tempfile;
+    my ( $rin, $in_pid ) = $ssh->pipe_in("cat > $tempfile")
+        or die "pipe_in method failed: " . $ssh->error;
+
+    my %filename_to_d;
+    foreach my $d (@not_in_cache) {
+        my $filename = $d->{filename};
+        $rin->print("$filename\n") || die $ssh->error;
+        $filename_to_d{$filename} = $d;
+    }
+    $rin->close || die $ssh->error;
+    waitpid( $in_pid, 0 );
+
+    my $lines = $ssh->capture("xargs --arg-file $tempfile md5sum")
+        or die "capture method failed: " . $ssh->error;
+    foreach my $line ( split "\n", $lines ) {
+
+        # chomp $line;
+        #warn "[$line]";
+        my ( $md5_hex, $filename ) = split / +/, $line;
+        warn "[$md5_hex, $filename]";
+        confess "Error with $line"
+            unless defined $md5_hex && defined $filename;
+        my $d = $filename_to_d{$filename};
+        confess "Missing d for $filename" unless $d;
+        push @entries,
+            Dackup::Entry->new(
+            {   key     => $d->{key},
+                md5_hex => $md5_hex,
+                size    => $d->{size},
+            }
+            );
+        $cache->set( $d->{cachekey}, $md5_hex );
+    }
+    $ssh->system("rm $tempfile")
+        or die "remote command failed: " . $ssh->error;
+
     return \@entries;
 }
 
@@ -92,15 +134,14 @@ sub update {
     if ( $source_type eq 'Dackup::Target::Filesystem' ) {
         my $source_filename = $source->filename($entry);
 
-        #warn "mkdir -p $destination_directory";
+        warn "mkdir -p $destination_directory";
         $ssh->system("mkdir -p $destination_directory")
             || die "mkdir -p failed: " . $ssh->error;
 
-        #warn "$source_filename -> $destination_filename";
+        warn "$source_filename -> $destination_filename";
 
-        $ssh->rsync_put( "$source_filename", "$destination_filename" )
-            || die "rsync failed: " . $ssh->error;
-
+        $ssh->scp_put( "$source_filename", "$destination_filename" )
+            || die "scp failed: " . $ssh->error;
     } else {
         confess "Do not know how to update from $source_type";
     }
@@ -111,7 +152,6 @@ sub delete {
     my $ssh      = $self->ssh;
     my $filename = $self->filename($entry);
 
-    #warn "rm -f $filename";
     $ssh->system("rm -f $filename")
         || die "rm -f $filename failed: " . $ssh->error;
 }
