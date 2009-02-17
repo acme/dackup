@@ -13,7 +13,7 @@ use Data::Stream::Bulk::Path::Class;
 use Path::Class;
 use Term::ProgressBar::Simple;
 
-our $VERSION = '0.32';
+our $VERSION = '0.33';
 
 has 'directory' => (
     is       => 'ro',
