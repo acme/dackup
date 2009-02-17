@@ -8,3 +8,4 @@ lib/Dackup/Target/S3.pm
 lib/Dackup/Target/SSH.pm
 Makefile.PL
 MANIFEST
+t/pod.t
