@@ -18,6 +18,7 @@ WriteMakefile(
         'MooseX::Types::Path::Class' => '0',
         'Net::Amazon::S3'            => '0.50',
         'Net::Mosso::CloudFiles'     => '0.35',
+        'Net::OpenSSH'               => '0.30',
         'Path::Class'                => '0',
         'Term::ProgressBar::Simple'  => '0',
     }
