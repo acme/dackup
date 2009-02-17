@@ -93,3 +93,44 @@ sub delete {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Dackup::Target::Filesystem - Flexible file backup to/from the filesystem
+
+=head1 SYNOPSIS
+
+  use Dackup;
+
+  my $source = Dackup::Target::Filesystem->new(
+      prefix => '/home/acme/important/' );
+
+  my $destination = Dackup::Target::Filesystem->new(
+      prefix => '/home/acme/backup/' );
+
+  my $dackup = Dackup->new(
+      directory   => '/home/acme/dackup/',
+      source      => $source,
+      destination => $destination,
+      delete      => 0,
+  );
+  $dackup->backup;
+
+=head1 DESCRIPTION
+
+This is a Dackup target for the filesystem.
+
+=head1 AUTHOR
+
+Leon Brocard <acme@astray.com>
+
+=head1 COPYRIGHT
+
+Copyright (C) 2009, Leon Brocard.
+
+=head1 LICENSE
+
+This module is free software; you can redistribute it or 
+modify it under the same terms as Perl itself.

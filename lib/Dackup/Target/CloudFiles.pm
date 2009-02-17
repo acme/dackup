@@ -89,3 +89,58 @@ sub delete {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Dackup::Target::CloudFiles - Flexible file backup to/from CloudFiles
+
+=head1 SYNOPSIS
+
+  use Dackup;
+  use Net::Amazon::S3;
+  use Net::Mosso::CloudFiles;
+
+  my $s3 = Net::Amazon::S3->new(
+      aws_access_key_id     => 'XXX',
+      aws_secret_access_key => 'YYY,
+      retry                 => 1,
+  );
+  my $client = Net::Amazon::S3::Client->new( s3 => $s3 );
+  my $bucket = $client->bucket( name => 'important' );
+
+  my $cloudfiles = Net::Mosso::CloudFiles->new(
+      user => 'myuser',
+      key  => 'ZZZ',
+  );
+  my $container = $cloudfiles->container('backup');
+
+  my $source = Dackup::Target::S3->new( bucket => $bucket );
+
+  my $destination = Dackup::Target::CloudFiles->new( container => $container );
+
+  my $dackup = Dackup->new(
+      directory   => '/home/acme/dackup',
+      source      => $source,
+      destination => $destination,
+      delete      => 1,
+  );
+  $dackup->backup;
+
+=head1 DESCRIPTION
+
+This is a Dackup target for the Mosso CloudFile's service.
+
+=head1 AUTHOR
+
+Leon Brocard <acme@astray.com>
+
+=head1 COPYRIGHT
+
+Copyright (C) 2009, Leon Brocard.
+
+=head1 LICENSE
+
+This module is free software; you can redistribute it or 
+modify it under the same terms as Perl itself.

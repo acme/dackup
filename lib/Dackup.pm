@@ -132,3 +132,55 @@ sub _calc {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Dackup - Flexible file backup
+
+=head1 SYNOPSIS
+
+  use Dackup;
+
+  my $source = Dackup::Target::Filesystem->new(
+      prefix => '/home/acme/important/' );
+
+  my $destination = Dackup::Target::Filesystem->new(
+      prefix => '/home/acme/backup/' );
+
+  my $dackup = Dackup->new(
+      directory   => '/home/acme/dackup/',
+      source      => $source,
+      destination => $destination,
+      delete      => 0,
+  );
+  $dackup->backup;
+
+=head1 DESCRIPTION
+
+This module is an attempt at a flexible file backup. It supports
+copying to and from filesystems, remote hosts via SSH, Amazon's
+Simple Storage Service and Mosso's CloudFiles. At all stages,
+it checks the MD5 hash of the source and destination files.
+
+It uses a MD5 cache to speed up operations, so you must select
+a directory in which to save the cache. It's just a cache, so
+you can delete it, but the next time you sync it might be a
+little slower.
+
+It will update new and changed files. If you pass in 
+delete => 1 then it will also delete removed files.
+
+=head1 AUTHOR
+
+Leon Brocard <acme@astray.com>
+
+=head1 COPYRIGHT
+
+Copyright (C) 2009, Leon Brocard.
+
+=head1 LICENSE
+
+This module is free software; you can redistribute it or 
+modify it under the same terms as Perl itself.

@@ -69,3 +69,53 @@ sub delete {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Dackup::Target::S3 - Flexible file backup to/from Amazon S3
+
+=head1 SYNOPSIS
+
+  use Dackup;
+  use Net::Amazon::S3;
+
+  my $s3 = Net::Amazon::S3->new(
+      aws_access_key_id     => 'XXX',
+      aws_secret_access_key => 'YYY',
+      retry                 => 1,
+  );
+
+  my $client = Net::Amazon::S3::Client->new( s3 => $s3 );
+  my $bucket = $client->bucket( name => 'mybackups' );
+
+  my $source = Dackup::Target::Filesystem->new(
+      prefix => '/home/acme/important/' );
+
+  my $destination = Dackup::Target::S3->new( bucket => $bucket );
+
+  my $dackup = Dackup->new(
+      directory   => '/home/acme/dackup',
+      source      => $source,
+      destination => $destination,
+      delete      => 1,
+  );
+  $dackup->backup;
+
+=head1 DESCRIPTION
+
+This is a Dackup target for Amazon's Simple Storage Service.
+
+=head1 AUTHOR
+
+Leon Brocard <acme@astray.com>
+
+=head1 COPYRIGHT
+
+Copyright (C) 2009, Leon Brocard.
+
+=head1 LICENSE
+
+This module is free software; you can redistribute it or 
+modify it under the same terms as Perl itself.

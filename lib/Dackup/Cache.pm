@@ -79,11 +79,3 @@ sub delete {
 }
 
 1;
-__END__
-
-CREATE TABLE md5_hex (
-  id varchar NOT NULL,
-  md5_hex char(32) NOT NULL,
-  PRIMARY KEY (id)
-);
-select datetime('now','-1 day');
