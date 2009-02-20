@@ -90,46 +90,48 @@ sub entries {
         }
     }
 
-    my $tempfile = $ssh->capture('tempfile');
-    chomp $tempfile;
-    $ssh->error and die "ssh failed: " . $ssh->error;
-    die "missing $tempfile" unless $tempfile;
-    my ( $rin, $in_pid ) = $ssh->pipe_in("cat > $tempfile")
-        or die "pipe_in method failed: " . $ssh->error;
+    if (@not_in_cache) {
+        my $tempfile = $ssh->capture('tempfile');
+        chomp $tempfile;
+        $ssh->error and die "ssh failed: " . $ssh->error;
+        die "missing $tempfile" unless $tempfile;
+        my ( $rin, $in_pid ) = $ssh->pipe_in("cat > $tempfile")
+            or die "pipe_in method failed: " . $ssh->error;
 
-    my %filename_to_d;
-    foreach my $d (@not_in_cache) {
-        my $filename = $d->{filename};
-        $rin->print("$filename\n") || die $ssh->error;
-        $filename_to_d{$filename} = $d;
+        my %filename_to_d;
+        foreach my $d (@not_in_cache) {
+            my $filename = $d->{filename};
+            $rin->print("$filename\n") || die $ssh->error;
+            $filename_to_d{$filename} = $d;
+        }
+        $rin->close || die $ssh->error;
+        waitpid( $in_pid, 0 );
+
+        my $lines = $ssh->capture("xargs --arg-file $tempfile md5sum")
+            or die "capture method failed: " . $ssh->error;
+        foreach my $line ( split "\n", $lines ) {
+
+            # chomp $line;
+            #warn "[$line]";
+            my ( $md5_hex, $filename ) = split / +/, $line;
+
+            #warn "[$md5_hex, $filename]";
+            confess "Error with $line"
+                unless defined $md5_hex && defined $filename;
+            my $d = $filename_to_d{$filename};
+            confess "Missing d for $filename" unless $d;
+            push @entries,
+                Dackup::Entry->new(
+                {   key     => $d->{key},
+                    md5_hex => $md5_hex,
+                    size    => $d->{size},
+                }
+                );
+            $cache->set( $d->{cachekey}, $md5_hex );
+        }
+        $ssh->system("rm $tempfile")
+            or die "remote command failed: " . $ssh->error;
     }
-    $rin->close || die $ssh->error;
-    waitpid( $in_pid, 0 );
-
-    my $lines = $ssh->capture("xargs --arg-file $tempfile md5sum")
-        or die "capture method failed: " . $ssh->error;
-    foreach my $line ( split "\n", $lines ) {
-
-        # chomp $line;
-        #warn "[$line]";
-        my ( $md5_hex, $filename ) = split / +/, $line;
-
-        #warn "[$md5_hex, $filename]";
-        confess "Error with $line"
-            unless defined $md5_hex && defined $filename;
-        my $d = $filename_to_d{$filename};
-        confess "Missing d for $filename" unless $d;
-        push @entries,
-            Dackup::Entry->new(
-            {   key     => $d->{key},
-                md5_hex => $md5_hex,
-                size    => $d->{size},
-            }
-            );
-        $cache->set( $d->{cachekey}, $md5_hex );
-    }
-    $ssh->system("rm $tempfile")
-        or die "remote command failed: " . $ssh->error;
 
     return \@entries;
 }

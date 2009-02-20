@@ -4,6 +4,7 @@ Revision history for Perl module Dackup:
      - add README file
      - add dry_run option
      - put messages in the progressbar instead of warning
+     - fix bug where no new files over ssh would cause hang
 
 0.33 Tue Feb 17 21:07:34 CST 2009
      - initial release
