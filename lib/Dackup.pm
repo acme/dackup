@@ -36,6 +36,11 @@ has 'delete' => (
     isa      => 'Bool',
     required => 1,
 );
+has 'dry_run' => (
+    is      => 'rw',
+    isa     => 'Bool',
+    default => 0,
+);
 has 'cache' => (
     is       => 'rw',
     isa      => 'Dackup::Cache',
@@ -57,6 +62,8 @@ sub backup {
     my $self        = shift;
     my $source      = $self->source;
     my $destination = $self->destination;
+    my $delete      = $self->delete;
+    my $dry_run     = $self->dry_run;
 
     my $source_entries      = $source->entries;
     my $destination_entries = $destination->entries;
@@ -64,28 +71,31 @@ sub backup {
     my ( $entries_to_update, $entries_to_delete )
         = $self->_calc( $source_entries, $destination_entries );
 
-    warn 'to update ' . scalar(@$entries_to_update);
-
-    my $total;
-    if ( $self->delete ) {
-        warn 'to delete ' . scalar(@$entries_to_delete) if $self->delete;
-        $total = scalar(@$entries_to_update) + scalar(@$entries_to_delete);
-    } else {
-        $total = scalar(@$entries_to_update);
-    }
+    my $total = scalar(@$entries_to_update);
+    $total += scalar(@$entries_to_delete) if $delete;
 
     my $progress = Term::ProgressBar::Simple->new($total);
+    $progress->message(
+        'Updating ' . scalar(@$entries_to_update) . ' files' );
+    $progress->message( 'Deleting ' . scalar(@$entries_to_delete) . ' files' )
+        if $delete;
+
     foreach my $entry (@$entries_to_update) {
-        $destination->update( $source, $entry );
+        $destination->update( $source, $entry ) unless $dry_run;
         $progress++;
     }
 
-    if ( $self->delete ) {
+    if ($delete) {
         foreach my $entry (@$entries_to_delete) {
-            $destination->delete($entry);
+            $destination->delete($entry) unless $dry_run;
             $progress++;
         }
     }
+
+    $progress->message( 'Updated ' . scalar(@$entries_to_update) . ' files' );
+    $progress->message( 'Deleted ' . scalar(@$entries_to_delete) . ' files' )
+        if $delete;
+
 }
 
 sub _calc {
@@ -154,6 +164,7 @@ Dackup - Flexible file backup
       source      => $source,
       destination => $destination,
       delete      => 0,
+      dry_run     => 0,
   );
   $dackup->backup;
 

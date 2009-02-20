@@ -20,7 +20,7 @@ WriteMakefile(
         'Net::Mosso::CloudFiles'     => '0.35',
         'Net::OpenSSH'               => '0.30',
         'Path::Class'                => '0',
-        'Term::ProgressBar::Simple'  => '0',
+        'Term::ProgressBar::Simple'  => '0.03',
     }
 );
 
