@@ -9,4 +9,5 @@ lib/Dackup/Target/S3.pm
 lib/Dackup/Target/SSH.pm
 Makefile.PL
 MANIFEST
+README
 t/pod.t
