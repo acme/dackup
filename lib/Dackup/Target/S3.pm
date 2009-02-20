@@ -51,6 +51,15 @@ sub object {
     );
 }
 
+sub name {
+    my ( $self, $entry ) = @_;
+    return
+          's3://'
+        . $self->bucket->name
+        . $self->prefix
+        . $entry->key;
+}
+
 sub update {
     my ( $self, $source, $entry ) = @_;
     my $source_type = ref($source);

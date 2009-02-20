@@ -41,10 +41,14 @@ has 'dry_run' => (
     isa     => 'Bool',
     default => 0,
 );
+has 'verbose' => (
+    is      => 'rw',
+    isa     => 'Bool',
+    default => 0,
+);
 has 'cache' => (
-    is       => 'rw',
-    isa      => 'Dackup::Cache',
-    required => 0,
+    is  => 'rw',
+    isa => 'Dackup::Cache',
 );
 
 __PACKAGE__->meta->make_immutable;
@@ -64,6 +68,7 @@ sub backup {
     my $destination = $self->destination;
     my $delete      = $self->delete;
     my $dry_run     = $self->dry_run;
+    my $verbose     = $self->verbose;
 
     my $source_entries      = $source->entries;
     my $destination_entries = $destination->entries;
@@ -81,12 +86,22 @@ sub backup {
         if $delete;
 
     foreach my $entry (@$entries_to_update) {
+        if ($verbose) {
+            my $source_name      = $source->name($entry);
+            my $destination_name = $destination->name($entry);
+            $progress->message("$source_name -> $destination_name");
+        }
+
         $destination->update( $source, $entry ) unless $dry_run;
         $progress++;
     }
 
     if ($delete) {
         foreach my $entry (@$entries_to_delete) {
+            if ($verbose) {
+                my $name = $destination->name($entry);
+                $progress->message("Deleting $name");
+            }
             $destination->delete($entry) unless $dry_run;
             $progress++;
         }
@@ -165,6 +180,7 @@ Dackup - Flexible file backup
       destination => $destination,
       delete      => 0,
       dry_run     => 0,
+      verbose     => 1,
   );
   $dackup->backup;
 

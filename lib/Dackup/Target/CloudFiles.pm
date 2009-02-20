@@ -53,6 +53,15 @@ sub entries {
     return \@entries;
 }
 
+sub name {
+    my ( $self, $entry ) = @_;
+    return
+          'cloudfiles://'
+        . $self->container->name
+        . $self->prefix
+        . $entry->key;
+}
+
 sub update {
     my ( $self, $source, $entry ) = @_;
     my $container   = $self->container;

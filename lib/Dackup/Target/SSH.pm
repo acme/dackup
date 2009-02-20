@@ -141,6 +141,16 @@ sub filename {
     return file( $self->prefix, $entry->key );
 }
 
+sub name {
+    my ( $self, $entry ) = @_;
+    my $ssh = $self->ssh;
+    return
+          'ssh://'
+        . $ssh->{_user} . '@'
+        . $ssh->{_host}
+        . file( $self->prefix, $entry->key );
+}
+
 sub update {
     my ( $self, $source, $entry ) = @_;
     my $ssh                   = $self->ssh;

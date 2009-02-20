@@ -16,6 +16,7 @@ SYNOPSIS
           destination => $destination,
           delete      => 0,
           dry_run     => 0,
+          verbose     => 1,
       );
       $dackup->backup;
 

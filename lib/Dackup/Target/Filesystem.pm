@@ -67,6 +67,11 @@ sub filename {
     return file( $self->prefix, $entry->key );
 }
 
+sub name {
+    my ( $self, $entry ) = @_;
+    return 'file://' . file( $self->prefix, $entry->key );
+}
+
 sub update {
     my ( $self, $source, $entry ) = @_;
     my $source_type          = ref($source);
