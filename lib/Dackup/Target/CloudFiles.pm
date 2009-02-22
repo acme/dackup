@@ -57,7 +57,7 @@ sub name {
     my ( $self, $entry ) = @_;
     return
           'cloudfiles://'
-        . $self->container->name
+        . $self->container->name . '/'
         . $self->prefix
         . $entry->key;
 }

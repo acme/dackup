@@ -55,7 +55,7 @@ sub name {
     my ( $self, $entry ) = @_;
     return
           's3://'
-        . $self->bucket->name
+        . $self->bucket->name . '/'
         . $self->prefix
         . $entry->key;
 }
