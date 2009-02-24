@@ -43,7 +43,9 @@ sub entries {
     return [] if $type ne 'directory';
 
     my ( $output, $errput )
-        = $ssh->capture2("find $prefix | xargs stat -c '%F:%n:%Z:%Y:%s:%i'");
+        = $ssh->capture2(
+        "find $prefix -exec stat -c '%F:%n:%Z:%Y:%s:%i' '{}' \\;");
+
     $ssh->error and die "ssh failed: " . $ssh->error;
 
     return [] unless $output;
@@ -101,19 +103,19 @@ sub entries {
         my %filename_to_d;
         foreach my $d (@not_in_cache) {
             my $filename = $d->{filename};
-            $rin->print("$filename\n") || die $ssh->error;
+            $rin->print("$filename\0") || die $ssh->error;
             $filename_to_d{$filename} = $d;
         }
         $rin->close || die $ssh->error;
         waitpid( $in_pid, 0 );
 
-        my $lines = $ssh->capture("xargs --arg-file $tempfile md5sum")
+        my $lines = $ssh->capture("xargs -0 --arg-file $tempfile md5sum")
             or die "capture method failed: " . $ssh->error;
         foreach my $line ( split "\n", $lines ) {
 
             # chomp $line;
             #warn "[$line]";
-            my ( $md5_hex, $filename ) = split / +/, $line;
+            my ( $md5_hex, $filename ) = split / +/, $line, 2;
 
             #warn "[$md5_hex, $filename]";
             confess "Error with $line"
