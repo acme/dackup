@@ -2,6 +2,7 @@ package Dackup::Target::SSH;
 use Moose;
 use MooseX::StrictConstructor;
 use MooseX::Types::Path::Class;
+use Data::Dumper;
 use Digest::MD5::File qw(file_md5_hex);
 use File::Copy;
 use Path::Class;
@@ -38,23 +39,61 @@ sub entries {
     my $cache       = $dackup->cache;
     my $directories = $self->directories;
 
-    my ( $type, $type_err ) = $ssh->capture2("stat -c '%F' $prefix");
+    my ( $type, $type_err )
+        = $ssh->capture2(qq{perl -e 'print "directory\\n" if -d "$prefix"'});
     chomp $type;
     return [] if $type ne 'directory';
 
-    my ( $output, $errput )
-        = $ssh->capture2(
-        "find $prefix -exec stat -c '%F:%n:%Z:%Y:%s:%i' '{}' \\;");
+    my $code = <<'EOF';
+#!perl
+use strict;
+use warnings;
+use File::Find;
 
-    $ssh->error and die "ssh failed: " . $ssh->error;
+my $root = 'XXX';
+find( \&wanted, $root );
 
+sub wanted {
+    my $filename = $File::Find::name;
+    my ($dev,  $ino,   $mode,  $nlink, $uid,     $gid, $rdev,
+        $size, $atime, $mtime, $ctime, $blksize, $blocks
+    ) = stat($filename);
+    my $type;
+    if ( -f _ ) {
+        $type = 'file';
+    } elsif ( -d _ ) {
+        $type = 'directory';
+    } else {
+        $type = 'other';
+    }
+    print "$type:$ctime:$mtime:$size:$ino:$filename\n";
+}
+EOF
+    $code =~ s/XXX/$prefix/;
+
+    my ($tmpnam)
+        = $ssh->capture(
+        q{perl -e 'use File::Temp qw/:POSIX/; print scalar tmpnam() . "\n"'})
+        || die "ssh failed: " . $ssh->error;
+    chomp $tmpnam;
+
+    my ( $rin, $in_pid ) = $ssh->pipe_in("cat > $tmpnam")
+        or die "pipe_in method failed: " . $ssh->error;
+    $rin->print("$code") || die $ssh->error;
+    $rin->close || die $ssh->error;
+    waitpid( $in_pid, 0 );
+
+    my ($output) = $ssh->capture2("perl $tmpnam")
+        || die "ssh failed: " . $ssh->error;
+    $ssh->system("rm $tmpnam")
+        or die "remote command failed: " . $ssh->error;
     return [] unless $output;
 
     my @entries;
     my @not_in_cache;
     foreach my $line ( split "\n", $output ) {
-        my ( $type, $filename, $ctime, $mtime, $size, $inodenum ) = split ':',
-            $line;
+        my ( $type, $ctime, $mtime, $size, $inodenum, $filename ) = split ':',
+            $line, 6;
         confess "Error with stat: $line"
             unless $type
                 && defined($filename)
@@ -91,26 +130,46 @@ sub entries {
                 };
         }
     }
-
     if (@not_in_cache) {
-        my $tempfile = $ssh->capture('tempfile');
-        chomp $tempfile;
-        $ssh->error and die "ssh failed: " . $ssh->error;
-        die "missing $tempfile" unless $tempfile;
-        my ( $rin, $in_pid ) = $ssh->pipe_in("cat > $tempfile")
+
+        my $code = <<'EOF';
+#!perl
+use strict;
+use warnings;
+use Digest::MD5;
+use IO::File;
+
+my XXX
+foreach my $filename (@$filenames) {
+    my $fh = IO::File->new($filename) || die $!;
+    my $md5 = Digest::MD5->new;
+    $md5->addfile($fh);
+    print $md5->hexdigest . ' ' . $filename . "\n";
+    $fh->close;
+}
+EOF
+
+        my $files
+            = Data::Dumper->Dump(
+            [ [ map { $_->{filename} } @not_in_cache ] ],
+            ['filenames'] );
+        $code =~ s/XXX/$files/;
+
+        my ( $rin, $in_pid ) = $ssh->pipe_in("cat > $tmpnam")
             or die "pipe_in method failed: " . $ssh->error;
+        $rin->print($code) || die $!;
+        $rin->close || die $ssh->error;
+        waitpid( $in_pid, 0 );
 
         my %filename_to_d;
         foreach my $d (@not_in_cache) {
             my $filename = $d->{filename};
-            $rin->print("$filename\0") || die $ssh->error;
             $filename_to_d{$filename} = $d;
         }
-        $rin->close || die $ssh->error;
-        waitpid( $in_pid, 0 );
 
-        my $lines = $ssh->capture("xargs -0 --arg-file $tempfile md5sum")
-            or die "capture method failed: " . $ssh->error;
+        my ($lines) = $ssh->capture2("perl $tmpnam")
+            || die "ssh failed: " . $ssh->error;
+
         foreach my $line ( split "\n", $lines ) {
 
             # chomp $line;
@@ -131,10 +190,9 @@ sub entries {
                 );
             $cache->set( $d->{cachekey}, $md5_hex );
         }
-        $ssh->system("rm $tempfile")
+        $ssh->system("rm $tmpnam")
             or die "remote command failed: " . $ssh->error;
     }
-
     return \@entries;
 }
 
