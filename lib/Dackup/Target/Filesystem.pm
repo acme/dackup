@@ -86,6 +86,11 @@ sub update {
     } elsif ( $source_type eq 'Dackup::Target::S3' ) {
         my $source_object = $source->object($entry);
         $source_object->get_filename( $destination_filename->stringify );
+    } elsif ( $source_type eq 'Dackup::Target::SSH' ) {
+        my $source_filename = $source->filename($entry);
+        $source->ssh->scp_get( "$source_filename", "$destination_filename" )
+            || die "scp failed: " . $source->ssh->error;
+        die "did one";
     } else {
         confess "Do not know how to update from $source_type";
     }
