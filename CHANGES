@@ -2,6 +2,7 @@ Revision history for Perl module Dackup:
 
 0.35
      - allow copying from SSH to Filesystem
+     - ignore symbolic links when copying from SSH
 
 0.34 Thu Feb 26 08:05:20 GMT 2009
      - add README file

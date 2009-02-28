@@ -94,6 +94,7 @@ EOF
     foreach my $line ( split "\n", $output ) {
         my ( $type, $ctime, $mtime, $size, $inodenum, $filename ) = split ':',
             $line, 6;
+        next if $type eq 'other';
         confess "Error with stat: $line"
             unless $type
                 && defined($filename)
