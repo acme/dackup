@@ -90,7 +90,6 @@ sub update {
         my $source_filename = $source->filename($entry);
         $source->ssh->scp_get( "$source_filename", "$destination_filename" )
             || die "scp failed: " . $source->ssh->error;
-        die "did one";
     } else {
         confess "Do not know how to update from $source_type";
     }
