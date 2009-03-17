@@ -10,10 +10,11 @@ use Dackup::Target::S3;
 use Dackup::Target::SSH;
 use DBI;
 use Data::Stream::Bulk::Path::Class;
+use List::Util qw(sum);
 use Path::Class;
 use Term::ProgressBar::Simple;
 
-our $VERSION = '0.34';
+our $VERSION = '0.35';
 
 has 'directory' => (
     is       => 'ro',
@@ -76,7 +77,7 @@ sub backup {
     my ( $entries_to_update, $entries_to_delete )
         = $self->_calc( $source_entries, $destination_entries );
 
-    my $total = scalar(@$entries_to_update);
+    my $total = sum map { $_->size } @$entries_to_update;
     $total += scalar(@$entries_to_delete) if $delete;
 
     my $progress = Term::ProgressBar::Simple->new($total);
@@ -91,9 +92,8 @@ sub backup {
             my $destination_name = $destination->name($entry);
             $progress->message("$source_name -> $destination_name");
         }
-
         $destination->update( $source, $entry ) unless $dry_run;
-        $progress++;
+        $progress += $entry->size;
     }
 
     if ($delete) {
