@@ -1,6 +1,6 @@
 Revision history for Perl module Dackup:
 
-0.41
+0.41 Tue Mar 17 14:54:02 GMT 2009
      - remove error when nothing is to be updated
 
 0.40 Tue Mar 17 11:49:54 GMT 2009

@@ -14,7 +14,7 @@ use List::Util qw(sum);
 use Path::Class;
 use Term::ProgressBar::Simple;
 
-our $VERSION = '0.40';
+our $VERSION = '0.41';
 
 has 'directory' => (
     is       => 'ro',
