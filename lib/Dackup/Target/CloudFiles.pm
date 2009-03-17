@@ -75,7 +75,7 @@ sub update {
         my $filename      = tmpnam();
         my $source_object = $source->object($entry);
         $source_object->get_filename($filename);
-        $object->put_filename( $source->filename($entry) );
+        $object->put_filename( $filename );
         unlink($filename) || die "Error deleting $filename: $!";
     } else {
         confess "Do not know how to update from $source_type";
