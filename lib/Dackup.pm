@@ -13,6 +13,7 @@ use DBI;
 use Devel::CheckOS qw(os_is);
 use File::HomeDir;
 use List::Util qw(sum);
+use Number::DataRate;
 use Path::Class;
 use Term::ProgressBar::Simple;
 
@@ -57,6 +58,10 @@ has 'verbose' => (
 has 'cache' => (
     is  => 'rw',
     isa => 'Dackup::Cache',
+);
+has 'throttle' => (
+    is  => 'ro',
+    isa => 'Str',
 );
 
 __PACKAGE__->meta->make_immutable;
@@ -195,6 +200,7 @@ Dackup - Flexible file backup
       delete      => 0,
       dry_run     => 0,
       verbose     => 1,
+      throttle    => '1Mbps',
   );
   $dackup->backup;
 

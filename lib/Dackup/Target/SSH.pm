@@ -237,7 +237,16 @@ sub update {
 
         #warn "$source_filename -> $destination_filename";
 
-        $ssh->scp_put( "$source_filename", "$destination_filename" )
+        my $scp_options = {};
+        my $throttle    = $self->dackup->throttle;
+        if ($throttle) {
+            my $data_rate       = Number::DataRate->new;
+            my $bits_per_second = $data_rate->to_bits_per_second($throttle);
+            $scp_options->{bwlimit} = $bits_per_second / 1000;    # in Kbit/s
+        }
+
+        $ssh->scp_put( $scp_options, "$source_filename",
+            "$destination_filename" )
             || die "scp failed: " . $ssh->error;
     } else {
         confess "Do not know how to update from $source_type";

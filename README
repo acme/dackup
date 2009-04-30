@@ -16,6 +16,7 @@ SYNOPSIS
           delete      => 0,
           dry_run     => 0,
           verbose     => 1,
+          throttle    => '1Mbps',
       );
       $dackup->backup;
 

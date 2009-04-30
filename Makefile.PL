@@ -21,6 +21,7 @@ WriteMakefile(
         'Net::Amazon::S3'            => '0.50',
         'Net::Mosso::CloudFiles'     => '0.41',
         'Net::OpenSSH'               => '0.30',
+        'Number::DataRate'           => '0',
         'Path::Class'                => '0',
         'Term::ProgressBar::Simple'  => '0.03',
     }
