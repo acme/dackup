@@ -1,5 +1,8 @@
 Revision history for Perl module Dackup:
 
+0.42
+     - fix bug with ssh transport and directories containing spaces
+
 0.41 Tue Mar 17 14:54:02 GMT 2009
      - remove error when nothing is to be updated
 

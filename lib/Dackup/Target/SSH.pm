@@ -225,9 +225,13 @@ sub update {
 
         unless ( $directories->{$destination_directory} ) {
 
-            #warn "mkdir -p $destination_directory";
-            $ssh->system("mkdir -p $destination_directory")
-                || die "mkdir -p failed: " . $ssh->error;
+            my $quoted_destination_directory
+                = $ssh->shell_quote("$destination_directory");
+
+            # warn "mkdir -p $quoted_destination_directory";
+            $ssh->system("mkdir -p $quoted_destination_directory")
+                || die "mkdir -p $quoted_destination_directory failed: "
+                . $ssh->error;
             $directories->{$destination_directory} = 1;
         }
 
