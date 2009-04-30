@@ -55,9 +55,16 @@ has 'cache' => (
 __PACKAGE__->meta->make_immutable;
 
 sub BUILD {
-    my $self     = shift;
-    my $filename = file( $self->directory, 'dackup.db' );
-    my $cache    = Dackup::Cache->new( filename => $filename );
+    my $self      = shift;
+    my $directory = dir( $self->directory );
+
+    unless ( -d $directory ) {
+        $directory->mkpath
+            || confess "Unable to create directory $directory: $!";
+    }
+
+    my $filename = file( $directory, 'dackup.db' );
+    my $cache = Dackup::Cache->new( filename => $filename );
     $self->cache($cache);
     $self->source->dackup($self);
     $self->destination->dackup($self);
