@@ -11,7 +11,6 @@ SYNOPSIS
           prefix => '/home/acme/backup/' );
 
       my $dackup = Dackup->new(
-          directory   => '/home/acme/dackup/',
           source      => $source,
           destination => $destination,
           delete      => 0,
@@ -26,9 +25,10 @@ DESCRIPTION
     Service and Mosso's CloudFiles. At all stages, it checks the MD5 hash of
     the source and destination files.
 
-    It uses a MD5 cache to speed up operations, so you must select a
-    directory in which to save the cache. It's just a cache, so you can
-    delete it, but the next time you sync it might be a little slower.
+    It uses an MD5 cache to speed up operations, which it stores by default
+    in your home directory (you can pass it as a directory parameter). It's
+    just a cache, so you can delete it, but the next time you sync it might
+    be a little slower.
 
     It will update new and changed files. If you pass in delete => 1 then it
     will also delete removed files.

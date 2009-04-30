@@ -4,6 +4,8 @@ Revision history for Perl module Dackup:
      - fix bug with ssh transport and directories containing spaces
      - when given a directory that does not exist, Dackup now mkpaths
        the directory (suggested by Alias)
+     - when not passed a directory, defaults to using .perl/Dackup
+       or Perl/Dackup in home directory (suggested by Alias)
 
 0.41 Tue Mar 17 14:54:02 GMT 2009
      - remove error when nothing is to be updated

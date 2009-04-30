@@ -120,7 +120,6 @@ Dackup::Target::Filesystem - Flexible file backup to/from the filesystem
       prefix => '/home/acme/backup/' );
 
   my $dackup = Dackup->new(
-      directory   => '/home/acme/dackup/',
       source      => $source,
       destination => $destination,
       delete      => 0,

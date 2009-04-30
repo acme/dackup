@@ -279,7 +279,6 @@ Dackup::Target::SSH - Flexible file backup remote hosts via SSH
   );
 
   my $dackup = Dackup->new(
-      directory   => '/home/acme/dackup',
       source      => $source,
       destination => $destination,
       delete      => 0,

@@ -12,7 +12,9 @@ WriteMakefile(
         'Data::Stream::Bulk'         => '0',
         'DBI'                        => '0',
         'DBD::SQLite'                => '0',
+        'Devel::CheckOS'             => '0',
         'Digest::MD5::File'          => '0',
+        'File::HomeDir'              => '0',
         'Moose'                      => '0',
         'MooseX::StrictConstructor'  => '0',
         'MooseX::Types::Path::Class' => '0',
@@ -23,4 +25,3 @@ WriteMakefile(
         'Term::ProgressBar::Simple'  => '0.03',
     }
 );
-
