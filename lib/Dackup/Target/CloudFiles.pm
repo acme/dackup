@@ -118,7 +118,10 @@ Dackup::Target::CloudFiles - Flexible file backup to/from CloudFiles
 
   my $source = Dackup::Target::S3->new( bucket => $bucket );
 
-  my $destination = Dackup::Target::CloudFiles->new( container => $container );
+  my $destination = Dackup::Target::CloudFiles->new(
+      container => $container,
+      prefix    => 'important_backup/', # optional
+  );
 
   my $dackup = Dackup->new(
       directory   => '/home/acme/dackup',

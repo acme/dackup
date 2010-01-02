@@ -102,7 +102,10 @@ Dackup::Target::S3 - Flexible file backup to/from Amazon S3
   my $source = Dackup::Target::Filesystem->new(
       prefix => '/home/acme/important/' );
 
-  my $destination = Dackup::Target::S3->new( bucket => $bucket );
+  my $destination = Dackup::Target::S3->new( 
+      bucket => $bucket,
+      prefix => 'important_backup/', # optional
+  );
 
   my $dackup = Dackup->new(
       source      => $source,

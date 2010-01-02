@@ -1,5 +1,8 @@
 Revision history for Perl module Dackup:
 
+0.43 Sat Jan  5 10:56:50 GMT 2010
+     - Minor doc patch for 'prefix' from leo
+
 0.42 Tue May  5 16:44:23 BST 2009
      - fix bug with ssh transport and directories containing spaces
      - when given a directory that does not exist, Dackup now mkpaths

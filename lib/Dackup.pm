@@ -17,7 +17,7 @@ use Number::DataRate;
 use Path::Class;
 use Term::ProgressBar::Simple;
 
-our $VERSION = '0.42';
+our $VERSION = '0.43';
 
 has 'directory' => (
     is       => 'ro',
