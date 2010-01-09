@@ -97,6 +97,9 @@ Dackup::Target::S3 - Flexible file backup to/from Amazon S3
   );
 
   my $client = Net::Amazon::S3::Client->new( s3 => $s3 );
+  
+  # You must have already created this bucket
+  # see Net::Amazon::S3::Client
   my $bucket = $client->bucket( name => 'mybackups' );
 
   my $source = Dackup::Target::Filesystem->new(
