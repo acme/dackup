@@ -131,6 +131,7 @@ sub backup {
     $progress->message( 'Deleted ' . scalar(@$entries_to_delete) . ' files' )
         if $delete;
 
+    return scalar(@$entries_to_update);
 }
 
 sub _calc {

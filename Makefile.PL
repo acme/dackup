@@ -25,6 +25,6 @@ WriteMakefile(
         'Path::Class'                => '0',
         'Term::ProgressBar::Simple'  => '0.03',
         'File::Temp'                 => '0',
-        'Test::More' => '0',
+        'Test::More'                 => '0',
     }
 );

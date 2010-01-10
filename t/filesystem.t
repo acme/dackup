@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use File::Temp qw(tempdir);
 use Path::Class;
-use Test::More tests => 8;
+use Test::More tests => 10;
 
 BEGIN { use_ok('Dackup'); }
 
@@ -17,8 +17,10 @@ $destination_dir->mkpath();
 ok( -d "$source_dir",      "source_dir exits" );
 ok( -d "$destination_dir", "destination_dir exists" );
 
+my $TESTFILES = 3;
+
 # create some test files
-for ( my $i = 0; $i < 3; $i++ ) {
+for ( my $i = 1; $i <= $TESTFILES; $i++ ) {
     my $file = $source_dir->file("test$i.txt");
     my $fh   = $file->openw();
     print $fh "File to backup $i";
@@ -37,7 +39,9 @@ my $dackup = Dackup->new(
     delete      => 0,
 );
 
-$dackup->backup;
+my $num_backedup_first = $dackup->backup;
+
+is($num_backedup_first, $TESTFILES, "We backed up the correct number of files");
 
 ok( -r $dackup->cache->filename(), "Cache exists in source" );
 
@@ -47,10 +51,14 @@ my $dest_cache
 ok( !-r $dest_cache, "Cache does not exist on destination" );
 
 # check test files
-for ( my $i = 0; $i < 3; $i++ ) {
+for ( my $i = 1; $i <= $TESTFILES; $i++ ) {
     my $file     = $destination_dir->file("test$i.txt");
     my $content  = $file->slurp();
     my $to_match = "File to backup $i";
     is( $content, $to_match, "Got matching content for file $i" );
 }
+
+my $num_backedup_second = $dackup->backup;
+
+is($num_backedup_second, 0, "We didn't need to backup anything");
 
