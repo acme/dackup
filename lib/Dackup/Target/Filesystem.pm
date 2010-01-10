@@ -33,6 +33,9 @@ sub entries {
     my @entries;
     until ( $file_stream->is_done ) {
         foreach my $filename ( $file_stream->items ) {
+            # Do not backup the cache db
+            next if $filename->basename() eq 'dackup.db';
+
             my $key = $filename->relative($prefix)->stringify;
 
             my $stat = $filename->stat

@@ -10,4 +10,5 @@ lib/Dackup/Target/SSH.pm
 Makefile.PL
 MANIFEST
 README
+t/filesystem.t
 t/pod.t
