@@ -14,7 +14,7 @@ my $destination_dir = dir( File::Temp->newdir() );
 $source_dir->mkpath();
 $destination_dir->mkpath();
 
-ok( -d "$source_dir",      "source_dir exits" );
+ok( -d "$source_dir",      "source_dir exists" );
 ok( -d "$destination_dir", "destination_dir exists" );
 
 my $TESTFILES = 3;
@@ -23,7 +23,7 @@ my $TESTFILES = 3;
 for ( my $i = 1; $i <= $TESTFILES; $i++ ) {
     my $file = $source_dir->file("test$i.txt");
     my $fh   = $file->openw();
-    print $fh "File to backup $i";
+    $fh->print("File to backup $i");
     $fh->close();
 }
 
@@ -41,7 +41,8 @@ my $dackup = Dackup->new(
 
 my $num_backedup_first = $dackup->backup;
 
-is($num_backedup_first, $TESTFILES, "We backed up the correct number of files");
+is( $num_backedup_first, $TESTFILES,
+    "We backed up the correct number of files" );
 
 ok( -r $dackup->cache->filename(), "Cache exists in source" );
 
@@ -60,5 +61,5 @@ for ( my $i = 1; $i <= $TESTFILES; $i++ ) {
 
 my $num_backedup_second = $dackup->backup;
 
-is($num_backedup_second, 0, "We didn't need to backup anything");
+is( $num_backedup_second, 0, "We didn't need to backup anything" );
 
