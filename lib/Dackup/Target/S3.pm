@@ -53,11 +53,7 @@ sub object {
 
 sub name {
     my ( $self, $entry ) = @_;
-    return
-          's3://'
-        . $self->bucket->name . '/'
-        . $self->prefix
-        . $entry->key;
+    return 's3://' . $self->bucket->name . '/' . $self->prefix . $entry->key;
 }
 
 sub update {
