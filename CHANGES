@@ -1,6 +1,6 @@
 Revision history for Perl module Dackup:
 
-0.44
+0.44 Mon Jan 11 12:06:16 IST 2010
      - add a file test (patch by Leo Lapworth)
      - do not backup the cache file (patch by Leo Lapworth)
      - note in documentation that S3 bucket must already exist
