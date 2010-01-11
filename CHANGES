@@ -1,5 +1,13 @@
 Revision history for Perl module Dackup:
 
+0.44
+     - add a file test (patch by Leo Lapworth)
+     - do not backup the cache file (patch by Leo Lapworth)
+     - note in documentation that S3 bucket must already exist
+       (patch by Leo Lapworth)
+     - add prefix to S3 and CloudFiles documentation (patch by Leo
+       Lapworth)
+
 0.43 Sat Jan  5 10:56:50 GMT 2010
      - Minor doc patch for 'prefix' from leo
 
